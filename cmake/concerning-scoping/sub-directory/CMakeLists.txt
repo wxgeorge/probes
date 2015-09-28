@@ -1,0 +1,2 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -bar")
+message("In child, CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
