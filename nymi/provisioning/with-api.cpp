@@ -25,8 +25,9 @@ int main() {
 	std::cout << "Setting up provisioning ... ";
 	// now confi
 
+	std::condition_variable provisioning_complete;
 	Nymi::api().configureProvisioning(
-		[]
+		[&provisioning_complete]
 		(std::shared_ptr<ProvisionAPI> papi) {
 			papi->onDiscovery(
 				[](int tid, int rssi, double srssi, bool approached) {
@@ -47,16 +48,22 @@ int main() {
 					Nymi::api().setUserLEDs(my_pattern);
 				});
 			papi->onProvisioned(
-				[](std::string pid){
+				[&provisioning_complete]
+				(std::string pid){
 					std::cout << "New provision available: " << pid << "\n";
-					exit(0);
+					provisioning_complete.notify_all();
 				});
 		});
 	std::cout << " complete!\n";
 
 	std::cout << "Put your device in provisioning mode to continue!\n";
 
-	while(true) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::mutex m;
+	std::unique_lock<std::mutex> lk(m);
+	auto cv_status = provisioning_complete.wait_for(lk, std::chrono::seconds(60));
+	if(cv_status == std::cv_status::timeout) {
+		std::cerr << "Timed-out waiting for provision.";
 	}
+	Nymi::api().finish();
+	return 0;
 }
