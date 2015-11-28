@@ -6,14 +6,17 @@
 using namespace nymi;
 
 std::string neaName = "provision-test";
+static std::string current_time_as_string(std::string format="%Y-%m-%d_%H_%M_%S");
+
 
 int main() {
 	// We begin by configuring persistence.
 	// We will not save the results from these run.
 	{
 		PersistenceConfiguration pConfig;
-		pConfig.strategy = Persistence::none;
 		pConfig.neaName = neaName;
+		pConfig.strategy = Persistence::file;
+		pConfig.filename = "napi-" + current_time_as_string() + ".json";
 		Nymi::api().configurePersistence(pConfig);
 	}
 
@@ -66,4 +69,22 @@ int main() {
 	}
 	Nymi::api().finish();
 	return 0;
+}
+
+// from heartid/CodeCpp
+/// Returns the system time in Y-M-D_HH_MM_SS format
+std::string current_time_as_string(std::string format_string)
+{
+	time_t timeSeconds=std::time(NULL);
+#pragma warning(push)
+#pragma warning(disable: 4996) // disable _CRT_SECURE_NO_WARNINGS 
+	struct tm* timeStruct=localtime(&timeSeconds);
+#pragma warning(pop)
+	char buffer[256];
+	strftime(
+		buffer, sizeof(buffer),
+		format_string.c_str(),
+		timeStruct
+	);
+	return std::string(buffer);
 }
