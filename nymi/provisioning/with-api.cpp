@@ -21,7 +21,9 @@ int main() {
 		Nymi::api().configurePersistence(pConfig);
 	}
 
-	if(!Nymi::api().init(neaName)) {
+	bool init_result = Nymi::api().init(neaName,
+		[](std::shared_ptr<InitAPI> iapi){ iapi->setLog("ncl.log"); } );
+	if(!init_result) {
 		std::cerr << "Nymi::api()::init() failed! Bailing out.\n";
 		exit(1);
 	}
