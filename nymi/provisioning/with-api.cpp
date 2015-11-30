@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <condition_variable>
 
 using namespace nymi;
 
@@ -71,6 +72,7 @@ int main() {
 	return 0;
 }
 
+#include <ctime>
 // from heartid/CodeCpp
 /// Returns the system time in Y-M-D_HH_MM_SS format
 std::string current_time_as_string(std::string format_string)
