@@ -25,15 +25,17 @@ int main() {
 		[](std::shared_ptr<InitAPI> iapi){ iapi->setLog("ncl.log"); } );
 	if(!init_result) {
 		std::cerr << "Nymi::api()::init() failed! Bailing out.\n";
-		exit(1);
+		return 1;
 	}
 
 	std::cout << "Setting up provisioning ... ";
 	// now confi
 
 	std::condition_variable provisioning_complete;
+	std::string m_prov_id;
+	bool provisioning_succeeded=false;
 	Nymi::api().configureProvisioning(
-		[&provisioning_complete]
+		[&provisioning_complete, &m_prov_id,&provisioning_succeeded]
 		(std::shared_ptr<ProvisionAPI> papi) {
 			papi->onDiscovery(
 				[](int tid, int rssi, double srssi, bool approached) {
@@ -54,9 +56,11 @@ int main() {
 					Nymi::api().setUserLEDs(my_pattern);
 				});
 			papi->onProvisioned(
-				[&provisioning_complete]
+				[&provisioning_complete,&m_prov_id,&provisioning_succeeded]
 				(std::string pid){
 					std::cout << "New provision available: " << pid << "\n";
+					m_prov_id=pid;
+					provisioning_succeeded=true;
 					provisioning_complete.notify_all();
 				});
 		});
@@ -69,7 +73,31 @@ int main() {
 	auto cv_status = provisioning_complete.wait_for(lk, std::chrono::seconds(60));
 	if(cv_status == std::cv_status::timeout) {
 		std::cerr << "Timed-out waiting for provision.";
+		return 1;
 	}
+
+	std::cout << "Initiating GetSymmetricKey ...\n";
+    std::shared_ptr< GetSymmetricKeyAPI > getsk = Nymi::api().getSymmetricKey(m_prov_id);
+    WorkOutcome wout = getsk->waitForDone();
+
+    if(WorkOutcome::succeeded != wout) {
+        // handle error.
+        std::cerr << "GetSymmetricKeyAPI failed. Outcome: " << wout;
+        std::vector < std::pair< int, std::string > > v;
+        getsk->getErrors(v);
+        if(v.size() > 0) {
+            std::cerr << "More details:";
+            for ( std::pair< int, std::string> p : v ) {
+                std::cerr << std::get<0>(p) << " " << std::get<1>(p);
+            }
+        }
+        return 1;
+    }
+
+    std::cout << "GetSymmetricKeyAPI succeeded.\n";
+    std::cout << "Id  = " << getsk->getSymmetricKeyIdAsString() << "\n";
+    std::cout << "Key = " << getsk->getSymmetricKeyAsString()   << "\n";
+
 	Nymi::api().finish();
 	return 0;
 }
