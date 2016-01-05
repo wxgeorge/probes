@@ -76,6 +76,11 @@ int main() {
 		return 1;
 	}
 
+	if(!provisioning_succeeded) {
+		std::cerr << "Done waiting for provisioning, but provisioning not marked as succeeded. Bailing out.\n";
+		return 1;
+	}
+
 	std::cout << "Initiating GetSymmetricKey ...\n";
     std::shared_ptr< GetSymmetricKeyAPI > getsk = Nymi::api().getSymmetricKey(m_prov_id);
     WorkOutcome wout = getsk->waitForDone();
