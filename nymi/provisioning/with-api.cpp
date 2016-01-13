@@ -13,16 +13,17 @@ static std::string current_time_as_string(std::string format="%Y-%m-%d_%H_%M_%S"
 int main() {
 	// We begin by configuring persistence.
 	// We will not save the results from these run.
+	std::string tag_this_run = current_time_as_string();
 	{
 		PersistenceConfiguration pConfig;
 		pConfig.neaName = neaName;
 		pConfig.strategy = Persistence::file;
-		pConfig.filename = "napi-" + current_time_as_string() + ".json";
+		pConfig.filename = tag_this_run + "-napi.json";
 		Nymi::api().configurePersistence(pConfig);
 	}
 
 	bool init_result = Nymi::api().init(neaName,
-		[](std::shared_ptr<InitAPI> iapi){ iapi->setLog("ncl.log"); } );
+		[tag_this_run](std::shared_ptr<InitAPI> iapi){ iapi->setLog(tag_this_run + "-ncl.log"); } );
 	if(!init_result) {
 		std::cerr << "Nymi::api()::init() failed! Bailing out.\n";
 		return 1;
