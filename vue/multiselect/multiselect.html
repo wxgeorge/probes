@@ -1,0 +1,28 @@
+<meta charset="utf-8">
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/vue-multiselect@2.0.0"></script>
+<link rel="stylesheet" href="https://unpkg.com/vue-multiselect@2.0.0/dist/vue-multiselect.min.css">
+
+<template>
+  <div>
+    <multiselect v-model="value" :options="options"></multiselect>
+  </div>
+</template>
+
+<div id="app">
+  {{ message }}
+  <multiselect v-model="value" :options="options"></multiselect>
+</div>
+
+<script>
+Vue.component('multiselect', VueMultiselect.Multiselect)
+var app = new Vue({
+  el: '#app',
+  // components: { VueMultiselect },
+  data: {
+    message: "Oh hello there!",
+    value: null,
+    options: ['list', 'of', 'options']
+  }
+})
+</script>
