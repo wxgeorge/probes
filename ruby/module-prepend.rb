@@ -28,6 +28,10 @@ new_host.extend MyModule
 new_host.my_function
 
 # note that original_host.my_function still gets the original implementation,
-# i.e. the implementation of MyModule.my_function.
-# I can't quite explain it, but there's obviously ancestry definition isn't subject
-# to redefinition ...
+#
+# i.e. if you run
+#
+# > original_host.my_function
+#
+# you get MyModule.my_function, but not MyMonkeyPatch.my_function.
+# I can't explain it. Ancestry isn't subject to dynamic redefinition?
